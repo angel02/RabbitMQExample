@@ -28,6 +28,9 @@ consumer.Received += (model, eventArgs) =>
         if (obj.Id == 10)
             throw new Exception("Let me go !!");
 
+        if(obj.Id == 15 || obj.Id == 16)
+            Task.Delay(TimeSpan.FromSeconds(10)).Wait();
+
         Console.WriteLine(message);
         channel.BasicAck(eventArgs.DeliveryTag, false);
     }
