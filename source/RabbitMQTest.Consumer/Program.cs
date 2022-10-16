@@ -15,7 +15,7 @@ using var channel = connection.CreateModel();
 channel.DeclareDeadLetterQueue();
 channel.DeclareQueue(Queues.Message);
 
-
+Console.WriteLine("Consumer 1");
 var consumer = new EventingBasicConsumer(channel);
 consumer.Received += (model, eventArgs) =>
 {

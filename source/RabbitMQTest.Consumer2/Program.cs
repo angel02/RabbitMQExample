@@ -15,7 +15,7 @@ using var channel = connection.CreateModel();
 channel.DeclareDeadLetterQueue();
 channel.DeclareQueue(Queues.Message);
 
-
+Console.WriteLine("Consumer 2: Pauses 3 seconds on msg 15 and 16");
 var consumer = new EventingBasicConsumer(channel);
 consumer.Received += (model, eventArgs) =>
 {
@@ -29,7 +29,7 @@ consumer.Received += (model, eventArgs) =>
             throw new Exception("Let me go !!");
 
         if(obj.Id == 15 || obj.Id == 16)
-            Task.Delay(TimeSpan.FromSeconds(10)).Wait();
+            Task.Delay(TimeSpan.FromSeconds(3)).Wait();
 
         Console.WriteLine(message);
         channel.BasicAck(eventArgs.DeliveryTag, false);
