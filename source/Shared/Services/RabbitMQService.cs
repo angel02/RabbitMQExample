@@ -52,7 +52,7 @@ namespace RabbitMQTest.Shared.Services
                 var json = JsonConvert.SerializeObject(message);
                 var bytes = Encoding.UTF8.GetBytes(json);
                 var body = new ReadOnlyMemory<byte>(bytes);
-                publishBatch.Add("", Queues.Message, false, null, body);
+                publishBatch.Add(exchange: "",routingKey: Queues.Message, mandatory: false, properties: null, body: body);
             });
 
             publishBatch.Publish();
