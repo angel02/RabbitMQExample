@@ -13,13 +13,13 @@ namespace RabbitMQTest.Shared.Extensions
             channel.ExchangeDeclare(Exchanges.DeadLetterExchange, "fanout");
             channel.QueueDeclare
             (
-                queue: deadLetterQueue, 
+                queue: deadLetterQueue,
                 durable: true, 
                 exclusive: false, 
                 autoDelete: false, 
                 arguments: new Dictionary<string, object> {
                         { "x-dead-letter-exchange", Exchanges.MyApplicationExchange },
-                        { "x-message-ttl", 30000 },
+                        //{ "x-message-ttl", 30000 },
                 }
             );
 
