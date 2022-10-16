@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 using RabbitMQTest.Shared.Extensions;
 using RabbitMQTest.Shared.Models;
 using System.Text;
+using System.Threading.Channels;
 
 namespace RabbitMQTest.Shared.Services
 {
@@ -16,43 +17,44 @@ namespace RabbitMQTest.Shared.Services
     public class RabbitMQService : IRabbitMQService
     {
         private readonly string RabbitAddress;
-        private readonly IConnection Connection;
+        private readonly IConnection connection;
+        private readonly IModel channel;
+        private readonly IBasicProperties properties;
 
         public RabbitMQService(IConfiguration configuration)
         {
             RabbitAddress = configuration.GetValue<string>("RabbitAddress");
             var factory = new ConnectionFactory { HostName = RabbitAddress };
 
-            Connection = factory.CreateConnection();
+            connection = factory.CreateConnection();
+            channel = connection.CreateModel();
+            channel.DeclareDeadLetterQueue();
+            channel.DeclareQueue(Queues.Message);
+
+            properties = channel.CreateBasicProperties();
+            properties.Persistent = true;
         }
 
 
         public void SendMessage(Message message)
         {
-            using var channel = Connection.CreateModel();
-            channel.QueueDeclare(Queues.Message, exclusive: false);
-
             var json = JsonConvert.SerializeObject(message);
             var body = Encoding.UTF8.GetBytes(json);
-            channel.BasicPublish(exchange: "", routingKey: Queues.Message, body: body);
+            channel.BasicPublish(exchange: "", routingKey: Queues.Message, basicProperties: properties, body: body);
         }
 
 
         public void SendMessage(List<Message> messages)
         {
-            using var channel = Connection.CreateModel();
-
-            channel.DeclareDeadLetterQueue();
-            channel.DeclareQueue(Queues.Message);
-
             var publishBatch = channel.CreateBasicPublishBatch();
+
 
             messages.ForEach(message =>
             {
                 var json = JsonConvert.SerializeObject(message);
                 var bytes = Encoding.UTF8.GetBytes(json);
                 var body = new ReadOnlyMemory<byte>(bytes);
-                publishBatch.Add(exchange: "",routingKey: Queues.Message, mandatory: false, properties: null, body: body);
+                publishBatch.Add(exchange: "",routingKey: Queues.Message, mandatory: false, properties: properties, body: body);
             });
 
             publishBatch.Publish();

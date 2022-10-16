@@ -10,7 +10,7 @@ namespace RabbitMQTest.Shared.Extensions
         {
             var deadLetterQueue = (String.IsNullOrWhiteSpace(customDeadLetterQueue))? Queues.DeadLetter : customDeadLetterQueue;
 
-            channel.ExchangeDeclare(Exchanges.DeadLetterExchange, "fanout");
+            channel.ExchangeDeclare(exchange: Exchanges.DeadLetterExchange, type: "fanout", durable: true, autoDelete: false);
             channel.QueueDeclare
             (
                 queue: deadLetterQueue,
@@ -30,6 +30,8 @@ namespace RabbitMQTest.Shared.Extensions
                 arguments: null
             );
 
+
+            channel.BasicQos(prefetchSize: 0, prefetchCount: 1, global: false);
             return deadLetterQueue;
         }
 
@@ -41,17 +43,23 @@ namespace RabbitMQTest.Shared.Extensions
             string RetryQueue = (String.IsNullOrWhiteSpace(deadLetterQueue))? Queues.DeadLetter : deadLetterQueue;
 
 
-            channel.ExchangeDeclare(Exchanges.MyApplicationExchange, "direct");
+            channel.ExchangeDeclare(exchange: Exchanges.MyApplicationExchange, type: "direct", durable: true, autoDelete: false);
             channel.QueueDeclare
             (
-                queueName, true, false, false,
-                new Dictionary<string, object>
-                {
+                queue: queueName, 
+                durable: true, 
+                exclusive: false, 
+                autoDelete: false,
+                new Dictionary<string, object> {
                         {"x-dead-letter-exchange", Exchanges.DeadLetterExchange},
                         {"x-dead-letter-routing-key", RetryQueue}
                 }
             );
-            channel.QueueBind(queueName, Exchanges.MyApplicationExchange, string.Empty, null);
+            channel.QueueBind(
+                queue: queueName, 
+                exchange:  Exchanges.MyApplicationExchange, 
+                routingKey: string.Empty, 
+                arguments: null);
 
             
 
