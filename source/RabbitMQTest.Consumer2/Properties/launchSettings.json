@@ -1,6 +1,6 @@
-﻿{
+{
   "profiles": {
-    "RabbitMQTest.Consumer": {
+    "RabbitMQTest.Consumer2": {
       "commandName": "Project"
     },
     "Docker": {

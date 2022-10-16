@@ -20,9 +20,9 @@ var consumer = new EventingBasicConsumer(channel);
 consumer.Received += (model, eventArgs) =>
 {
     try
-	{
-		var body = eventArgs.Body.ToArray();
-		var message = Encoding.UTF8.GetString(body);
+    {
+        var body = eventArgs.Body.ToArray();
+        var message = Encoding.UTF8.GetString(body);
 
         var obj = JsonConvert.DeserializeObject<Message>(message);
         if (obj.Id == 10)
@@ -31,8 +31,8 @@ consumer.Received += (model, eventArgs) =>
         Console.WriteLine(message);
         channel.BasicAck(eventArgs.DeliveryTag, false);
     }
-	catch (Exception)
-	{
+    catch (Exception)
+    {
         if (eventArgs.Redelivered)
             channel.BasicNack(eventArgs.DeliveryTag, false, false);
         else
